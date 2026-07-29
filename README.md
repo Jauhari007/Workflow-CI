@@ -1,6 +1,6 @@
 # Heart Disease Prediction & CI/CD Pipeline
 
-![Python](https://img.shields.io/badge/Python-3.9-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.12.7-blue.svg)
 ![MLflow](https://img.shields.io/badge/MLflow-2.19.0-green.svg)
 ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-orange.svg)
 
@@ -33,7 +33,7 @@ Proyek ini dikembangkan oleh **Jauhari Achmad Pradana** untuk membangun model Ma
 ## 🛠️ Instalasi & Eksekusi Lokal
 
 ### 1. Prasyarat
-Pastikan Anda telah menginstal **Python 3.9+** atau lingkungan **Conda**.
+Disarankan menggunakan **Python 3.12.7** atau lingkungan **Conda**.
 
 ### 2. Install Dependensi
 Masuk ke direktori `MLProject` dan install paket yang dibutuhkan:
@@ -68,10 +68,7 @@ Semua metrik dan parameter model secara otomatis dicatat ke dalam direktori `mlr
 
 ## 🚀 Continuous Integration (GitHub Actions)
 Pipeline CI dikonfigurasi dalam `.github/workflows/ml-ci.yml`. Setiap kali ada perubahan (*push*) ke branch `main`, GitHub Actions akan:
-1. Menyiapkan environment Python 3.9.
-2. Menginstall dependensi proyek.
+1. Menyiapkan environment **Python 3.12.7**.
+2. Menginstall dependensi proyek (`mlflow==2.19.0`, dll).
 3. Melatih model machine learning.
 4. Mengunggah artefak hasil eksperimen MLflow (`mlruns/`).
-
----
-*Dikembangkan oleh Jauhari Achmad Pradana.*

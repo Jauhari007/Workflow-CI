@@ -35,6 +35,37 @@ def load_dataset(data_directory: str = "heart_disease_preprocessing") -> Tuple[p
     return X_train, X_test, y_train, y_test
 
 
+def _train_and_evaluate(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: np.ndarray, y_test: np.ndarray) -> None:
+    # Inisialisasi dan pelatihan model
+    clf = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        random_state=42,
+        n_jobs=-1
+    )
+    clf.fit(X_train, y_train)
+
+    # Melakukan prediksi pada data uji
+    y_pred = clf.predict(X_test)
+
+    # Kalkulasi metrik evaluasi
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, average="weighted")
+    rec = recall_score(y_test, y_pred, average="weighted")
+    f1 = f1_score(y_test, y_pred, average="weighted")
+
+    # Menampilkan ringkasan hasil evaluasi
+    print("\n" + "=" * 40)
+    print("     METRIK EVALUASI MODEL MLFLOW     ")
+    print("=" * 40)
+    print(f"  Akurasi (Accuracy)   : {acc:.4f}")
+    print(f"  Presisi (Precision)  : {prec:.4f}")
+    print(f"  Daya Ingat (Recall)  : {rec:.4f}")
+    print(f"  F1 Score             : {f1:.4f}")
+    print("=" * 40)
+    print("[SUCCESS] Pelatihan model dan CI pipeline selesai dijalankan!\n")
+
+
 def execute_training_pipeline() -> None:
     """
     Eksekusi alur pelatihan model Random Forest beserta pelacakan MLflow.
@@ -48,48 +79,15 @@ def execute_training_pipeline() -> None:
     # Mengaktifkan pelacakan otomatis dari MLflow sklearn
     mlflow.sklearn.autolog()
 
-    # Periksa apakah run sudah aktif (misal ketika dijalankan via `mlflow run`)
-    active_run = mlflow.active_run()
-    if active_run is None:
-        mlflow.set_experiment("Heart_Disease_Prediction")
-        mlflow.start_run(run_name="RandomForest_CI")
-        close_run = True
+    # Jika dipanggil lewat `mlflow run`, MLFLOW_RUN_ID diset di os.environ
+    if "MLFLOW_RUN_ID" in os.environ:
+        print(f"[INFO] Dijalankan via 'mlflow run' dengan MLFLOW_RUN_ID={os.environ['MLFLOW_RUN_ID']}")
+        _train_and_evaluate(X_train, X_test, y_train, y_test)
     else:
-        print(f"[INFO] Menggunakan MLflow active run ID: {active_run.info.run_id}")
-        close_run = False
-
-    try:
-        # Inisialisasi dan pelatihan model
-        clf = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42,
-            n_jobs=-1
-        )
-        clf.fit(X_train, y_train)
-
-        # Melakukan prediksi pada data uji
-        y_pred = clf.predict(X_test)
-
-        # Kalkulasi metrik evaluasi
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred, average="weighted")
-        rec = recall_score(y_test, y_pred, average="weighted")
-        f1 = f1_score(y_test, y_pred, average="weighted")
-
-        # Menampilkan ringkasan hasil evaluasi
-        print("\n" + "=" * 40)
-        print("     METRIK EVALUASI MODEL MLFLOW     ")
-        print("=" * 40)
-        print(f"  Akurasi (Accuracy)   : {acc:.4f}")
-        print(f"  Presisi (Precision)  : {prec:.4f}")
-        print(f"  Daya Ingat (Recall)  : {rec:.4f}")
-        print(f"  F1 Score             : {f1:.4f}")
-        print("=" * 40)
-        print("[SUCCESS] Pelatihan model dan CI pipeline selesai dijalankan!\n")
-    finally:
-        if close_run:
-            mlflow.end_run()
+        print("[INFO] Dijalankan secara langsung via Python script...")
+        mlflow.set_experiment("Heart_Disease_Prediction")
+        with mlflow.start_run(run_name="RandomForest_CI"):
+            _train_and_evaluate(X_train, X_test, y_train, y_test)
 
 
 if __name__ == "__main__":

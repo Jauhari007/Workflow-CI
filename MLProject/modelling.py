@@ -47,10 +47,18 @@ def execute_training_pipeline() -> None:
 
     # Mengaktifkan pelacakan otomatis dari MLflow sklearn
     mlflow.sklearn.autolog()
-    mlflow.set_experiment("Heart_Disease_Prediction")
 
-    print("[INFO] Memulai MLflow run: RandomForest_CI...")
-    with mlflow.start_run(run_name="RandomForest_CI"):
+    # Periksa apakah run sudah aktif (misal ketika dijalankan via `mlflow run`)
+    active_run = mlflow.active_run()
+    if active_run is None:
+        mlflow.set_experiment("Heart_Disease_Prediction")
+        mlflow.start_run(run_name="RandomForest_CI")
+        close_run = True
+    else:
+        print(f"[INFO] Menggunakan MLflow active run ID: {active_run.info.run_id}")
+        close_run = False
+
+    try:
         # Inisialisasi dan pelatihan model
         clf = RandomForestClassifier(
             n_estimators=100,
@@ -79,6 +87,9 @@ def execute_training_pipeline() -> None:
         print(f"  F1 Score             : {f1:.4f}")
         print("=" * 40)
         print("[SUCCESS] Pelatihan model dan CI pipeline selesai dijalankan!\n")
+    finally:
+        if close_run:
+            mlflow.end_run()
 
 
 if __name__ == "__main__":
